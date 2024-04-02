@@ -1,5 +1,6 @@
 // GameWindow.cpp
 #include "GameWindow.h"
+#include <xaudio2.h>
 
 GameWindow::GameWindow(std::wstring ipAddress, std::wstring port) :
     m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL) {}

@@ -5,6 +5,7 @@
 #include <dwrite.h>
 #include <string>
 #include "GameWindow.h"
+#include <xaudio2.h>
 
 // Link with d2d1.lib and dwrite.lib
 #pragma comment(lib, "d2d1.lib")
@@ -20,6 +21,8 @@ ID2D1Factory* pD2DFactory = NULL;
 IDWriteFactory* pDWriteFactory = NULL;
 IDWriteTextFormat* pTextFormat = NULL;
 ID2D1HwndRenderTarget* pRT = NULL; // Declare pRT here
+IXAudio2* pXAudio2 = nullptr;
+IXAudio2MasteringVoice* pMasterVoice = nullptr;
 
 GameWindow* pGameWindow = nullptr;
 
@@ -39,6 +42,32 @@ void SafeRelease(IUnknown** ppInterface);
 
 // Entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+
+    HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
+    if (FAILED(hr)) {
+		return 0;
+	}
+
+    // Creating an instance of XAudio2 engine
+    IXAudio2* pXAudio2 = nullptr;
+    hr = XAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+    if (FAILED(hr)) {
+        // Handle the error, could not create the XAudio2 instance
+        CoUninitialize();
+        return -1;
+    }
+
+    // Create a mastering voice used for processing all the audio data
+    IXAudio2MasteringVoice* pMasterVoice = nullptr;
+    hr = pXAudio2->CreateMasteringVoice(&pMasterVoice);
+    if (FAILED(hr)) {
+        // Handle the error, could not create the mastering voice
+        pXAudio2->Release();
+        CoUninitialize();
+        return -1;
+    }
+
+
     // Register the window class
     const wchar_t CLASS_NAME[] = L"TankGameClass";
 
@@ -85,6 +114,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DispatchMessage(&msg);
     }
 
+    // Uninitialize COM at the end of WinMain for cleaning up
+    CoUninitialize();
     // Clean up resources
     Cleanup();
 
@@ -297,12 +328,22 @@ void OnJoinGame(HWND hwnd) {
 
 // Cleanup resources
 void Cleanup() {
+    // Clean up XAudio2
+    if (pMasterVoice != nullptr) {
+        pMasterVoice->DestroyVoice();
+    }
+    if (pXAudio2 != nullptr) {
+        pXAudio2->Release();
+    }
+
     delete pGameWindow; // Release the allocated memory
     pGameWindow = nullptr;
     SafeRelease(reinterpret_cast<IUnknown**>(&pTextFormat));
     SafeRelease(reinterpret_cast<IUnknown**>(&pDWriteFactory));
     SafeRelease(reinterpret_cast<IUnknown**>(&pRT));
     SafeRelease(reinterpret_cast<IUnknown**>(&pD2DFactory));
+
+    CoUninitialize();
 }
 
 // Release a COM interface pointer safely
