@@ -51,9 +51,9 @@ void Cleanup();
 void SafeRelease(IUnknown** ppInterface);
 
 // Declaration (also known as a function prototype)
-void LoadSound(const std::wstring& filename);
+void LoadSound(const std::wstring& filename, bool loop = false);
 
-void LoadSound(const std::wstring& filename) {
+void LoadSound(const std::wstring& filename, bool loop) {
     drwav wav;
     if (!drwav_init_file_w(&wav, filename.c_str(), NULL)) {
         // Error opening WAV file.
@@ -84,7 +84,8 @@ void LoadSound(const std::wstring& filename) {
     XAUDIO2_BUFFER buffer = {};
     buffer.AudioBytes = static_cast<UINT32>(sampleCount * sizeof(float));
     buffer.pAudioData = reinterpret_cast<BYTE*>(pSampleData);
-    buffer.Flags = XAUDIO2_END_OF_STREAM;
+    buffer.Flags = loop ? 0 : XAUDIO2_END_OF_STREAM;
+    if(loop) buffer.LoopCount = XAUDIO2_LOOP_INFINITE;
 
     IXAudio2SourceVoice* pSourceVoice = nullptr;
     if (FAILED(pXAudio2->CreateSourceVoice(&pSourceVoice, &wfx))) {
@@ -139,12 +140,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Loading audio files after creating engine and mastering voice
-    LoadSound(L"Audio\\bullock_net_computer.wav");
+    LoadSound(L"Audio\\bullock_net_computer.wav", true);
     LoadSound(L"Audio\\background_music.wav");
     LoadSound(L"Audio\\in_the_hole.wav");
     LoadSound(L"Audio\\punk.wav");
     LoadSound(L"Audio\\t1_be_back.wav");
 
+    IXAudio2SourceVoice* backgroundVoice = soundVoices[L"Audio\\background_music.wav"];
+    if (backgroundVoice) {
+        backgroundVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
+    }
 
     // Register the window class
     const wchar_t CLASS_NAME[] = L"TankGameClass";
@@ -398,7 +403,7 @@ void OnJoinGame(HWND hwnd) {
 
     if (pGameWindow == nullptr) {
         // Create the JoinGameWindow instance and pass IP and port
-        pGameWindow = new GameWindow(ipAddress, port);
+        pGameWindow = new GameWindow(ipAddress, port, soundVoices);
         pGameWindow->Create(hwnd);
     }
 
@@ -413,6 +418,15 @@ void Cleanup() {
     if (pXAudio2 != nullptr) {
         pXAudio2->Release();
     }
+
+    // In your Cleanup function:
+    for (auto& voiceEntry : soundVoices) {
+        if (voiceEntry.second != nullptr) {
+            voiceEntry.second->Stop(0, XAUDIO2_COMMIT_NOW);  // Stop the voice
+            voiceEntry.second->DestroyVoice();  // Destroy the voice
+        }
+    }
+
 
     delete pGameWindow; // Release the allocated memory
     pGameWindow = nullptr;

@@ -2,8 +2,11 @@
 #include "GameWindow.h"
 #include <xaudio2.h>
 
-GameWindow::GameWindow(std::wstring ipAddress, std::wstring port) :
-    m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL) {}
+//GameWindow::GameWindow(std::wstring ipAddress, std::wstring port) :
+   // m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL) {}
+    // GameWindow.cpp
+    GameWindow::GameWindow(std::wstring ipAddress, std::wstring port, std::map<std::wstring, IXAudio2SourceVoice*>& soundVoices) :
+        m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL), m_soundVoices(soundVoices) {}
 
 GameWindow::~GameWindow() {
     // Clean up window resources if needed
@@ -126,9 +129,26 @@ void GameWindow::MoveCircle(int dx, int dy) {
 }
 
 //void GameWindow::PlaySoundEffect(const std::wstring& soundName) {
-    // Find the loaded sound with the given name
-    // Play the sound using its source voice
+//    auto it = soundVoices.find(soundName);
+//    if(it != soundVoices.end()) {
+//        IXAudio2SourceVoice* pSourceVoice = it->second;
+//        if(pSourceVoice) {
+//            pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
+//        }
+//    }
 //}
+
+void GameWindow::PlaySoundEffect(const std::wstring& soundName) {
+    auto it = m_soundVoices.find(soundName);
+    if (it != m_soundVoices.end()) {
+        IXAudio2SourceVoice* pSourceVoice = it->second;
+        if (pSourceVoice) {
+            pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
+        }
+    }
+}
+
+
 
 
 
