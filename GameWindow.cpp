@@ -125,6 +125,12 @@ void GameWindow::MoveCircle(int dx, int dy) {
     InvalidateRect(m_hWnd, NULL, TRUE);
 }
 
+//void GameWindow::PlaySoundEffect(const std::wstring& soundName) {
+    // Find the loaded sound with the given name
+    // Play the sound using its source voice
+//}
+
+
 
 void GameWindow::DrawBall(HWND hwnd) {
     PAINTSTRUCT ps;

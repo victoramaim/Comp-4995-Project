@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\Audio">
+      <UniqueIdentifier>{4aa48e97-d801-4742-bae1-4b0d3fb4643a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -27,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
@@ -34,20 +38,25 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Media Include="..\..\..\Downloads\bullock_net_computer.wav">
-      <Filter>Resource Files</Filter>
+    <ClInclude Include="dr_wav.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Auido\bullock_net_computer.wav">
+      <Filter>Resource Files\Audio</Filter>
     </Media>
-    <Media Include="..\..\..\Downloads\in_the_hole.wav">
-      <Filter>Resource Files</Filter>
+    <Media Include="Auido\in_the_hole.wav">
+      <Filter>Resource Files\Audio</Filter>
     </Media>
-    <Media Include="..\..\..\Downloads\t1_be_back.wav">
-      <Filter>Resource Files</Filter>
+    <Media Include="Auido\punk.wav">
+      <Filter>Resource Files\Audio</Filter>
     </Media>
-    <Media Include="..\..\..\Downloads\punk.wav">
-      <Filter>Resource Files</Filter>
+    <Media Include="Auido\t1_be_back.wav">
+      <Filter>Resource Files\Audio</Filter>
     </Media>
-    <Media Include="..\..\..\Downloads\arpeggiator-end-credits-wav-14644.mp3">
-      <Filter>Resource Files</Filter>
+    <Media Include="Auido\background_music.wav">
+      <Filter>Resource Files\Audio</Filter>
     </Media>
   </ItemGroup>
 </Project>

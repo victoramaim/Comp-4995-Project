@@ -6,6 +6,12 @@
 #include <string>
 #include "GameWindow.h"
 #include <xaudio2.h>
+#include <fstream>
+#include <vector>
+#define DR_WAV_IMPLEMENTATION
+#include "dr_wav.h"
+#include <map>
+
 
 // Link with d2d1.lib and dwrite.lib
 #pragma comment(lib, "d2d1.lib")
@@ -16,6 +22,7 @@
 #define IDC_IP_INPUT 1003
 
 
+
 // Global variables
 ID2D1Factory* pD2DFactory = NULL;
 IDWriteFactory* pDWriteFactory = NULL;
@@ -23,6 +30,9 @@ IDWriteTextFormat* pTextFormat = NULL;
 ID2D1HwndRenderTarget* pRT = NULL; // Declare pRT here
 IXAudio2* pXAudio2 = nullptr;
 IXAudio2MasteringVoice* pMasterVoice = nullptr;
+std::map<std::wstring, IXAudio2SourceVoice*> soundVoices;
+
+
 
 GameWindow* pGameWindow = nullptr;
 
@@ -39,6 +49,67 @@ void CreateUI(HWND hwnd);
 void OnJoinGame(HWND hwnd); // New function to handle join game button click
 void Cleanup();
 void SafeRelease(IUnknown** ppInterface);
+
+// Declaration (also known as a function prototype)
+void LoadSound(const std::wstring& filename);
+
+void LoadSound(const std::wstring& filename) {
+    drwav wav;
+    if (!drwav_init_file_w(&wav, filename.c_str(), NULL)) {
+        // Error opening WAV file.
+        return;
+    }
+
+    // Allocate and read samples
+    size_t sampleCount = wav.totalPCMFrameCount * wav.channels;
+    float* pSampleData = new float[sampleCount];
+    size_t samplesRead = drwav_read_pcm_frames_f32(&wav, wav.totalPCMFrameCount, pSampleData);
+    if (samplesRead != wav.totalPCMFrameCount) {
+        // Error reading samples.
+        drwav_uninit(&wav);
+        delete[] pSampleData;
+        return;
+    }
+
+    // Set up the WAVEFORMATEX structure based on the drwav object
+    WAVEFORMATEX wfx = {};
+    wfx.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+    wfx.nChannels = wav.channels;
+    wfx.nSamplesPerSec = wav.sampleRate;
+    wfx.wBitsPerSample = 32; // Since we're reading the samples as floats
+    wfx.nBlockAlign = (wfx.nChannels * sizeof(float)); // Block align is the size of a single frame
+    wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+
+    // Set up the XAUDIO2_BUFFER structure
+    XAUDIO2_BUFFER buffer = {};
+    buffer.AudioBytes = static_cast<UINT32>(sampleCount * sizeof(float));
+    buffer.pAudioData = reinterpret_cast<BYTE*>(pSampleData);
+    buffer.Flags = XAUDIO2_END_OF_STREAM;
+
+    IXAudio2SourceVoice* pSourceVoice = nullptr;
+    if (FAILED(pXAudio2->CreateSourceVoice(&pSourceVoice, &wfx))) {
+        // Error creating source voice.
+        drwav_uninit(&wav);
+        delete[] pSampleData;
+        return;
+    }
+
+    if (FAILED(pSourceVoice->SubmitSourceBuffer(&buffer))) {
+        // Error submitting source buffer.
+        pSourceVoice->DestroyVoice();
+        drwav_uninit(&wav);
+        delete[] pSampleData;
+        return;
+    }
+
+    // Store the source voice in the map
+    soundVoices[filename] = pSourceVoice;
+
+    // No need to call drwav_uninit() or delete[] pSampleData here
+    // because their lifetimes are managed by XAudio2 now.
+}
+
+
 
 // Entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -66,6 +137,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         CoUninitialize();
         return -1;
     }
+
+    // Loading audio files after creating engine and mastering voice
+    LoadSound(L"Audio\\bullock_net_computer.wav");
+    LoadSound(L"Audio\\background_music.wav");
+    LoadSound(L"Audio\\in_the_hole.wav");
+    LoadSound(L"Audio\\punk.wav");
+    LoadSound(L"Audio\\t1_be_back.wav");
 
 
     // Register the window class
@@ -353,3 +431,8 @@ void SafeRelease(IUnknown** ppInterface) {
         *ppInterface = NULL;
     }
 }
+
+
+
+
+
