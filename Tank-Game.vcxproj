@@ -143,6 +143,13 @@
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\Downloads\arpeggiator-end-credits-wav-14644.mp3" />
+    <Media Include="..\..\..\Downloads\bullock_net_computer.wav" />
+    <Media Include="..\..\..\Downloads\in_the_hole.wav" />
+    <Media Include="..\..\..\Downloads\punk.wav" />
+    <Media Include="..\..\..\Downloads\t1_be_back.wav" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\directxtk_uwp.2024.2.22.1\build\native\directxtk_uwp.targets" Condition="Exists('packages\directxtk_uwp.2024.2.22.1\build\native\directxtk_uwp.targets')" />

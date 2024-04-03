@@ -33,4 +33,21 @@
       <Filter>Header Files</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\Downloads\t1_be_back.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\..\..\Downloads\punk.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\..\..\Downloads\arpeggiator-end-credits-wav-14644.mp3">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\..\..\Downloads\in_the_hole.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\..\..\Downloads\bullock_net_computer.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+  </ItemGroup>
 </Project>
