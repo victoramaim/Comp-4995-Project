@@ -178,9 +178,25 @@ void GameWindow::DrawBall(HWND hwnd) {
 
     Ellipse(hdc, centerX - radius, centerY - radius, centerX + radius, centerY + radius);
 
+    // Draw static shapes in the corners
+    int shapeSize = 50; // Size of the corner shapes
+
+    // Top-left corner
+    Rectangle(hdc, 0, 0, shapeSize, shapeSize);
+
+    // Top-right corner
+    Rectangle(hdc, clientRect.right - shapeSize, 0, clientRect.right, shapeSize);
+
+    // Bottom-left corner
+    Rectangle(hdc, 0, clientRect.bottom - shapeSize, shapeSize, clientRect.bottom);
+
+    // Bottom-right corner
+    Rectangle(hdc, clientRect.right - shapeSize, clientRect.bottom - shapeSize, clientRect.right, clientRect.bottom);
+
     // Cleanup
     SelectObject(hdc, hOldBrush);
     DeleteObject(hBrush);
 
     EndPaint(hwnd, &ps);
 }
+
