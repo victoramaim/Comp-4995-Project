@@ -121,7 +121,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
     // Creating an instance of XAudio2 engine
-    IXAudio2* pXAudio2 = nullptr;
     hr = XAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
     if (FAILED(hr)) {
         // Handle the error, could not create the XAudio2 instance
@@ -130,7 +129,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Create a mastering voice used for processing all the audio data
-    IXAudio2MasteringVoice* pMasterVoice = nullptr;
     hr = pXAudio2->CreateMasteringVoice(&pMasterVoice);
     if (FAILED(hr)) {
         // Handle the error, could not create the mastering voice
@@ -410,23 +408,27 @@ void OnJoinGame(HWND hwnd) {
 }
 
 // Cleanup resources
+// Cleanup resources
 void Cleanup() {
     // Clean up XAudio2
     if (pMasterVoice != nullptr) {
         pMasterVoice->DestroyVoice();
-    }
-    if (pXAudio2 != nullptr) {
-        pXAudio2->Release();
+        pMasterVoice = nullptr; // Set to null after destroying
     }
 
-    // In your Cleanup function:
     for (auto& voiceEntry : soundVoices) {
         if (voiceEntry.second != nullptr) {
             voiceEntry.second->Stop(0, XAUDIO2_COMMIT_NOW);  // Stop the voice
             voiceEntry.second->DestroyVoice();  // Destroy the voice
+            voiceEntry.second = nullptr;  // Set the pointer to null after destroying
         }
     }
+    soundVoices.clear();
 
+    if (pXAudio2 != nullptr) {
+        pXAudio2->Release();
+        pXAudio2 = nullptr; // Set to null after releasing
+    }
 
     delete pGameWindow; // Release the allocated memory
     pGameWindow = nullptr;
@@ -438,6 +440,7 @@ void Cleanup() {
     CoUninitialize();
 }
 
+
 // Release a COM interface pointer safely
 void SafeRelease(IUnknown** ppInterface) {
     if (*ppInterface != NULL) {
@@ -445,8 +448,3 @@ void SafeRelease(IUnknown** ppInterface) {
         *ppInterface = NULL;
     }
 }
-
-
-
-
-
