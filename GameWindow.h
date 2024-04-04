@@ -36,7 +36,7 @@ public:
 
     void Create(HWND parentWnd);
     void MoveCircle(int dx, int dy); // Declaration of MoveCircle method
-    void PlaySoundEffect(const std::wstring& soundName);
+    void PlaySoundEffect(const std::wstring& soundName, float volume);
 
 
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -52,4 +52,6 @@ private:
 
 
     void DrawBall(HWND hwnd); // Declaration of DrawBall method
+    float Distance(int x1, int y1, int x2, int y2);
+    void UpdateSoundVolumes();
 };

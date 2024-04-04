@@ -103,6 +103,7 @@ void LoadSound(const std::wstring& filename, bool loop) {
         return;
     }
 
+    //pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
     // Store the source voice in the map
     soundVoices[filename] = pSourceVoice;
 
@@ -139,15 +140,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Loading audio files after creating engine and mastering voice
     LoadSound(L"Audio\\bullock_net_computer.wav", true);
-    LoadSound(L"Audio\\background_music.wav");
-    LoadSound(L"Audio\\in_the_hole.wav");
-    LoadSound(L"Audio\\punk.wav");
-    LoadSound(L"Audio\\t1_be_back.wav");
+    LoadSound(L"Audio\\background_music.wav"), true;
+    LoadSound(L"Audio\\in_the_hole.wav", true);
+    LoadSound(L"Audio\\punk.wav", true);
+    LoadSound(L"Audio\\t1_be_back.wav", true);
 
     IXAudio2SourceVoice* backgroundVoice = soundVoices[L"Audio\\background_music.wav"];
     if (backgroundVoice) {
         backgroundVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
+        backgroundVoice->SetVolume(0.02f);  // Set volume to 5%
+        OutputDebugString(L"Playing background music at volume: 0.05\n");
+
     }
+
 
     // Register the window class
     const wchar_t CLASS_NAME[] = L"TankGameClass";

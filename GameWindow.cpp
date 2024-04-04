@@ -1,10 +1,10 @@
 // GameWindow.cpp
 #include "GameWindow.h"
 #include <xaudio2.h>
+#include <cmath>
+#include <iostream>
 
-//GameWindow::GameWindow(std::wstring ipAddress, std::wstring port) :
-   // m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL) {}
-    // GameWindow.cpp
+
     GameWindow::GameWindow(std::wstring ipAddress, std::wstring port, std::map<std::wstring, IXAudio2SourceVoice*>& soundVoices) :
         m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL), m_soundVoices(soundVoices) {
         // Initialize the circle position
@@ -39,6 +39,24 @@ void GameWindow::Create(HWND parentWnd) {
     // If the window creation succeeds, show and update the window
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
+
+    //PlaySoundEffect(L"Audio\\bullock_net_computer.wav", 0.0f);
+    //PlaySoundEffect(L"Audio\\in_the_hole.wav", 0.0f);
+    //PlaySoundEffect(L"Audio\\punk.wav", 0.0f);
+    //PlaySoundEffect(L"Audio\\t1_be_back.wav", 0.0f);
+        // Start corner sounds
+    std::wstring cornerSoundFiles[] = { L"Audio\\bullock_net_computer.wav", L"Audio\\in_the_hole.wav", L"Audio\\punk.wav", L"Audio\\t1_be_back.wav" };
+    for (const auto& soundFile : cornerSoundFiles) {
+        auto it = m_soundVoices.find(soundFile);
+        if (it != m_soundVoices.end()) {
+            IXAudio2SourceVoice* pSourceVoice = it->second;
+            if (pSourceVoice) {
+                pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);
+                pSourceVoice->SetVolume(0.0f); // Set initial volume to 0
+
+            }
+        }
+    }
 }
 
 LRESULT CALLBACK GameWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -97,14 +115,7 @@ LRESULT CALLBACK GameWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-//void GameWindow::MoveCircle(int dx, int dy) {
-//    // Update the position of the circle
-//    m_circleX += dx;
-//    m_circleY += dy;
-//
-//    // Request a repaint to refresh the window
-//    InvalidateRect(m_hWnd, NULL, TRUE);
-//}
+
 void GameWindow::MoveCircle(int dx, int dy) {
     // Update the position of the circle
     m_circleX += dx;
@@ -131,30 +142,25 @@ void GameWindow::MoveCircle(int dx, int dy) {
 
     // Request a repaint to refresh the window
     InvalidateRect(m_hWnd, NULL, TRUE);
+    UpdateSoundVolumes();
 }
 
-//void GameWindow::PlaySoundEffect(const std::wstring& soundName) {
-//    auto it = soundVoices.find(soundName);
-//    if(it != soundVoices.end()) {
-//        IXAudio2SourceVoice* pSourceVoice = it->second;
-//        if(pSourceVoice) {
-//            pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
-//        }
-//    }
-//}
 
-void GameWindow::PlaySoundEffect(const std::wstring& soundName) {
+void GameWindow::PlaySoundEffect(const std::wstring& soundName, float volume) {
     auto it = m_soundVoices.find(soundName);
     if (it != m_soundVoices.end()) {
         IXAudio2SourceVoice* pSourceVoice = it->second;
         if (pSourceVoice) {
-            pSourceVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
+            // Update volume
+            pSourceVoice->SetVolume(volume);
+            OutputDebugString((L"Playing sound: " + soundName + L" at volume: " + std::to_wstring(volume) + L"\n").c_str());
+
+        }
+        else {
+            OutputDebugString((L"Failed to play sound: " + soundName + L"\n").c_str());
         }
     }
 }
-
-
-
 
 
 void GameWindow::DrawBall(HWND hwnd) {
@@ -181,17 +187,13 @@ void GameWindow::DrawBall(HWND hwnd) {
     // Draw static shapes in the corners
     int shapeSize = 50; // Size of the corner shapes
 
-    // Top-left corner
-    Rectangle(hdc, 0, 0, shapeSize, shapeSize);
+    // Define corner points
+    POINT corners[] = { {0, 0}, {clientRect.right - shapeSize, 0}, {0, clientRect.bottom - shapeSize}, {clientRect.right - shapeSize, clientRect.bottom - shapeSize} };
 
-    // Top-right corner
-    Rectangle(hdc, clientRect.right - shapeSize, 0, clientRect.right, shapeSize);
-
-    // Bottom-left corner
-    Rectangle(hdc, 0, clientRect.bottom - shapeSize, shapeSize, clientRect.bottom);
-
-    // Bottom-right corner
-    Rectangle(hdc, clientRect.right - shapeSize, clientRect.bottom - shapeSize, clientRect.right, clientRect.bottom);
+    for (int i = 0; i < 4; ++i) {
+        // Draw the rectangle
+        Rectangle(hdc, corners[i].x, corners[i].y, corners[i].x + shapeSize, corners[i].y + shapeSize);
+    }
 
     // Cleanup
     SelectObject(hdc, hOldBrush);
@@ -199,4 +201,50 @@ void GameWindow::DrawBall(HWND hwnd) {
 
     EndPaint(hwnd, &ps);
 }
+
+
+
+float GameWindow::Distance(int x1, int y1, int x2, int y2) {
+    return sqrtf(static_cast<float>((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+}
+
+void GameWindow::UpdateSoundVolumes() {
+    RECT clientRect;
+    GetClientRect(m_hWnd, &clientRect);
+    float maxDistance = Distance(0, 0, clientRect.right, clientRect.bottom);
+    std::wstring soundFiles[] = { L"Audio\\bullock_net_computer.wav", L"Audio\\in_the_hole.wav", L"Audio\\punk.wav", L"Audio\\t1_be_back.wav" };
+    POINT corners[] = { {0, 0}, {clientRect.right, 0}, {0, clientRect.bottom}, {clientRect.right, clientRect.bottom} };
+
+    //for (int i = 0; i < 4; ++i) {
+    //    float distance = Distance(m_circleX, m_circleY, corners[i].x, corners[i].y);
+
+    //    // If the distance is greater than 170 pixels, set the volume to 0
+    //    if (distance > 500) {
+    //        PlaySoundEffect(soundFiles[i], 0.0f);
+    //    }
+    //    else {
+    //        float volume = max(0.0f, 1.0f - distance / maxDistance);
+    //        PlaySoundEffect(soundFiles[i], volume);
+    //    }
+    //}
+    for (int i = 0; i < 4; ++i) {
+        float distance = Distance(m_circleX, m_circleY, corners[i].x, corners[i].y);
+
+        // If the distance is greater than 500 pixels, set the volume to 0
+        float volume;
+        if (distance > 500) {
+            volume = 0.0f;
+        }
+        else {
+            volume = max(0.0f, 1.0f - distance / maxDistance);
+        }
+        PlaySoundEffect(soundFiles[i], volume);
+
+        // Debug output
+        OutputDebugString((L"Volume for: " + soundFiles[i] + L" at volume: " + std::to_wstring(volume) + L"\n").c_str());
+
+    }
+}
+
+
 
