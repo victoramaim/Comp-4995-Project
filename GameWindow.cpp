@@ -84,31 +84,66 @@ LRESULT CALLBACK GameWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, 
             // Handle destruction
             PostQuitMessage(0);
             return 0;
+            //case WM_KEYDOWN:
+            //    // Handle key down events (WASD for movement)
+            //    switch (wParam) {
+            //    case 'W':
+            //        // Move the circle up
+            //        pGameWindow->MoveCircle(0, -2);
+            //        InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+            //        break;
+            //    case 'A':
+            //        // Move the circle left
+            //        pGameWindow->MoveCircle(-2, 0);
+            //        InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+            //        break;
+            //    case 'S':
+            //        // Move the circle down
+            //        pGameWindow->MoveCircle(0, 2);
+            //        InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+            //        break;
+            //    case 'D':
+            //        // Move the circle right
+            //        pGameWindow->MoveCircle(2, 0);
+            //        InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+            //        break;
+            //    }
+            //    return 0;
+            //}
         case WM_KEYDOWN:
-            // Handle key down events (WASD for movement)
             switch (wParam) {
             case 'W':
-                // Move the circle up
-                pGameWindow->MoveCircle(0, -2);
-                InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+                pGameWindow->movingUp = true;
                 break;
             case 'A':
-                // Move the circle left
-                pGameWindow->MoveCircle(-2, 0);
-                InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+                pGameWindow->movingLeft = true;
                 break;
             case 'S':
-                // Move the circle down
-                pGameWindow->MoveCircle(0, 2);
-                InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+                pGameWindow->movingDown = true;
                 break;
             case 'D':
-                // Move the circle right
-                pGameWindow->MoveCircle(2, 0);
-                InvalidateRect(hwnd, NULL, TRUE); // Request a repaint
+                pGameWindow->movingRight = true;
                 break;
             }
-            return 0;
+            pGameWindow->MoveCircle();
+            break;
+
+        case WM_KEYUP:
+            switch (wParam) {
+            case 'W':
+                pGameWindow->movingUp = false;
+                break;
+            case 'A':
+                pGameWindow->movingLeft = false;
+                break;
+            case 'S':
+                pGameWindow->movingDown = false;
+                break;
+            case 'D':
+                pGameWindow->movingRight = false;
+                break;
+            }
+            break;
         }
     }
 
@@ -116,7 +151,50 @@ LRESULT CALLBACK GameWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, 
 }
 
 
-void GameWindow::MoveCircle(int dx, int dy) {
+//void GameWindow::MoveCircle(int dx, int dy) {
+//    // Update the position of the circle
+//    m_circleX += dx;
+//    m_circleY += dy;
+//
+//    // Get the dimensions of the client area
+//    RECT clientRect;
+//    GetClientRect(m_hWnd, &clientRect);
+//
+//    // Adjust the circle position if it goes out of bounds
+//    if (m_circleX < 20) {
+//        m_circleX = 20;
+//    }
+//    else if (m_circleX > clientRect.right - 20) { // Adjust the value according to the circle size
+//        m_circleX = clientRect.right - 20;
+//    }
+//
+//    if (m_circleY < 20) {
+//        m_circleY = 20;
+//    }
+//    else if (m_circleY > clientRect.bottom - 20) { // Adjust the value according to the circle size
+//        m_circleY = clientRect.bottom - 20;
+//    }
+//
+//    // Request a repaint to refresh the window
+//    InvalidateRect(m_hWnd, NULL, TRUE);
+//    UpdateSoundVolumes();
+//}
+void GameWindow::MoveCircle() {
+    int dx = 0;
+    int dy = 0;
+    if (movingUp) {
+        dy -= 2;
+    }
+    if (movingDown) {
+        dy += 2;
+    }
+    if (movingLeft) {
+        dx -= 2;
+    }
+    if (movingRight) {
+        dx += 2;
+    }
+
     // Update the position of the circle
     m_circleX += dx;
     m_circleY += dy;
@@ -129,21 +207,25 @@ void GameWindow::MoveCircle(int dx, int dy) {
     if (m_circleX < 20) {
         m_circleX = 20;
     }
-    else if (m_circleX > clientRect.right - 20) { // Adjust the value according to the circle size
+    else if (m_circleX > clientRect.right - 20) {
         m_circleX = clientRect.right - 20;
     }
 
     if (m_circleY < 20) {
         m_circleY = 20;
     }
-    else if (m_circleY > clientRect.bottom - 20) { // Adjust the value according to the circle size
+    else if (m_circleY > clientRect.bottom - 20) {
         m_circleY = clientRect.bottom - 20;
     }
 
     // Request a repaint to refresh the window
     InvalidateRect(m_hWnd, NULL, TRUE);
+
+    // Update sound volumes
     UpdateSoundVolumes();
 }
+
+
 
 
 void GameWindow::PlaySoundEffect(const std::wstring& soundName, float volume) {
@@ -211,30 +293,21 @@ float GameWindow::Distance(int x1, int y1, int x2, int y2) {
 void GameWindow::UpdateSoundVolumes() {
     RECT clientRect;
     GetClientRect(m_hWnd, &clientRect);
-    float maxDistance = Distance(0, 0, clientRect.right, clientRect.bottom);
+    float maxDistance = 500.0f; // Define the maximum distance for sound attenuation
     std::wstring soundFiles[] = { L"Audio\\bullock_net_computer.wav", L"Audio\\in_the_hole.wav", L"Audio\\punk.wav", L"Audio\\t1_be_back.wav" };
     POINT corners[] = { {0, 0}, {clientRect.right, 0}, {0, clientRect.bottom}, {clientRect.right, clientRect.bottom} };
 
     for (int i = 0; i < 4; ++i) {
         float distance = Distance(m_circleX, m_circleY, corners[i].x, corners[i].y);
+        float volume = 0.0f;
 
-        float volume;
-        if (distance > 500) {
-            volume = 0.0f;
+        if (distance < maxDistance) {
+            volume = 1.0f - (distance / maxDistance);
         }
-        else {
-            // Invert the scaling so volume increases as distance decreases
-            float scaledDistance = distance / maxDistance;
-            volume = 1.0f - (distance / 500.0f); // Subtract from 1 to invert
-        }
+
         PlaySoundEffect(soundFiles[i], volume);
-
-        // Debug output
         OutputDebugString((L"Volume for: " + soundFiles[i] + L" at volume: " + std::to_wstring(volume) + L"\n").c_str());
     }
 }
-
-
-
 
 

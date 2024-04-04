@@ -35,7 +35,8 @@ public:
     ~GameWindow();
 
     void Create(HWND parentWnd);
-    void MoveCircle(int dx, int dy); // Declaration of MoveCircle method
+    //void MoveCircle(int dx, int dy); // Declaration of MoveCircle method
+    void MoveCircle(); // Declaration of MoveCircle method
     void PlaySoundEffect(const std::wstring& soundName, float volume);
 
 
@@ -47,6 +48,12 @@ private:
     std::wstring m_port;
     int m_circleX = 200; // Initial X position of the circle
     int m_circleY = 200; // Initial Y position of the circle
+
+    // Movement flags
+    bool movingUp = false;
+    bool movingDown = false;
+    bool movingLeft = false;
+    bool movingRight = false;
 
     std::map<std::wstring, IXAudio2SourceVoice*>& m_soundVoices; // Reference to the soundVoices map
 
