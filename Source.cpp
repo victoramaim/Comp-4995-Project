@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     IXAudio2SourceVoice* backgroundVoice = soundVoices[L"Audio\\background_music.wav"];
     if (backgroundVoice) {
         backgroundVoice->Start(0, XAUDIO2_COMMIT_NOW);  // Start the voice immediately
-        backgroundVoice->SetVolume(0.02f);  // Set volume to 5%
+        backgroundVoice->SetVolume(0.05f);  // Set volume to 5%
         OutputDebugString(L"Playing background music at volume: 0.05\n");
 
     }

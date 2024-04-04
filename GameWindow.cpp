@@ -215,36 +215,26 @@ void GameWindow::UpdateSoundVolumes() {
     std::wstring soundFiles[] = { L"Audio\\bullock_net_computer.wav", L"Audio\\in_the_hole.wav", L"Audio\\punk.wav", L"Audio\\t1_be_back.wav" };
     POINT corners[] = { {0, 0}, {clientRect.right, 0}, {0, clientRect.bottom}, {clientRect.right, clientRect.bottom} };
 
-    //for (int i = 0; i < 4; ++i) {
-    //    float distance = Distance(m_circleX, m_circleY, corners[i].x, corners[i].y);
-
-    //    // If the distance is greater than 170 pixels, set the volume to 0
-    //    if (distance > 500) {
-    //        PlaySoundEffect(soundFiles[i], 0.0f);
-    //    }
-    //    else {
-    //        float volume = max(0.0f, 1.0f - distance / maxDistance);
-    //        PlaySoundEffect(soundFiles[i], volume);
-    //    }
-    //}
     for (int i = 0; i < 4; ++i) {
         float distance = Distance(m_circleX, m_circleY, corners[i].x, corners[i].y);
 
-        // If the distance is greater than 500 pixels, set the volume to 0
         float volume;
         if (distance > 500) {
             volume = 0.0f;
         }
         else {
-            volume = max(0.0f, 1.0f - distance / maxDistance);
+            // Invert the scaling so volume increases as distance decreases
+            float scaledDistance = distance / maxDistance;
+            volume = 1.0f - (distance / 500.0f); // Subtract from 1 to invert
         }
         PlaySoundEffect(soundFiles[i], volume);
 
         // Debug output
         OutputDebugString((L"Volume for: " + soundFiles[i] + L" at volume: " + std::to_wstring(volume) + L"\n").c_str());
-
     }
 }
+
+
 
 
 
