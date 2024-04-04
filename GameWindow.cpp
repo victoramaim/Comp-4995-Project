@@ -6,7 +6,12 @@
    // m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL) {}
     // GameWindow.cpp
     GameWindow::GameWindow(std::wstring ipAddress, std::wstring port, std::map<std::wstring, IXAudio2SourceVoice*>& soundVoices) :
-        m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL), m_soundVoices(soundVoices) {}
+        m_ipAddress(ipAddress), m_port(port), m_hWnd(NULL), m_soundVoices(soundVoices) {
+        // Initialize the circle position
+        m_circleX = 390;
+        m_circleY = 390;
+    }
+
 
 GameWindow::~GameWindow() {
     // Clean up window resources if needed
