@@ -1,4 +1,4 @@
-# Dynamic Sound Tank Game
+# Dynamic Sound Game
 
 ## Project Overview
 
