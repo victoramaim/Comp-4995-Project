@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project, Dynamic Sound Game, incorporates real-time audio manipulation within a visually environment. It focuses on dynamic sound effects to enhance player interaction and game immersion. The application is built using C++ with extensive use of the Windows API for graphical rendering and event handling, alongside XAudio2 for advanced audio capabilities.
+This project, Dynamic Sound Game, incorporates real-time audio manipulation within a visual environment. It focuses on dynamic sound effects to enhance player interaction and game immersion. The application is built using C++ with extensive use of the Windows API for graphical rendering and event handling, alongside XAudio2 for advanced audio capabilities.
 
 ## Features
 
