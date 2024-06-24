@@ -20,7 +20,7 @@ This project, Dynamic Sound Game, incorporates real-time audio manipulation with
 ## Development Environment
 
 - **Platform:** Developed for Windows using Visual Studio.
-- **Languages:** C++.
+- **Languages:** C, C++.
 - **Libraries/Frameworks:** Windows API, Direct2D, DirectWrite, XAudio2.
 
 ## Running the Game
